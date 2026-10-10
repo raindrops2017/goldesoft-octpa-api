@@ -1,0 +1,118 @@
+{
+    "baseUrl": "196.135.197.32:5000/api/v1",
+    "authentication": {
+        "header": "x-api-key",
+        "description": "Required for all report endpoints. Pass your secret key in the 'x-api-key' HTTP header."
+    },
+    "endpoints": {
+        "health": {
+            "path": "/health",
+            "method": "GET",
+            "description": "Health check and database connectivity status",
+            "authRequired": false,
+            "urlExample": "/health"
+        },
+        "basicReport": {
+            "path": "/report/basic",
+            "method": "GET",
+            "description": "Lightweight period sales totals without category breakdowns",
+            "authRequired": true,
+            "parameters": {
+                "dateFrom": {
+                    "type": "string (YYYY-MM-DD)",
+                    "required": true,
+                    "description": "Start date of the reporting period (inclusive)"
+                },
+                "dateTo": {
+                    "type": "string (YYYY-MM-DD)",
+                    "required": true,
+                    "description": "End date of the reporting period (inclusive)"
+                }
+            },
+            "urlExample": "/report/basic?dateFrom=YYYY-MM-DD&dateTo=YYYY-MM-DD"
+        },
+        "detailedReport": {
+            "path": "/report/detailed",
+            "method": "GET",
+            "description": "Detailed sales report with dining/delivery breakdown, comps, voids, and category pivot values",
+            "authRequired": true,
+            "parameters": {
+                "dateFrom": {
+                    "type": "string (YYYY-MM-DD)",
+                    "required": true,
+                    "description": "Start date of the reporting period (inclusive)"
+                },
+                "dateTo": {
+                    "type": "string (YYYY-MM-DD)",
+                    "required": true,
+                    "description": "End date of the reporting period (inclusive)"
+                }
+            },
+            "urlExample": "/report/detailed?dateFrom=YYYY-MM-DD&dateTo=YYYY-MM-DD"
+        },
+        "checksReport": {
+            "path": "/report/checks",
+            "method": "GET",
+            "description": "Individual checks report returning each check separately with line items, order type, delivery company, status, and timestamps",
+            "authRequired": true,
+            "parameters": {
+                "dateFrom": {
+                    "type": "string (YYYY-MM-DD)",
+                    "required": true,
+                    "description": "Start date of the reporting period (inclusive)"
+                },
+                "dateTo": {
+                    "type": "string (YYYY-MM-DD)",
+                    "required": true,
+                    "description": "End date of the reporting period (inclusive)"
+                },
+                "page": {
+                    "type": "integer",
+                    "required": false,
+                    "default": 1,
+                    "description": "Page number for pagination (optional, minimum 1)"
+                },
+                "limit": {
+                    "type": "integer",
+                    "required": false,
+                    "description": "Number of checks per page (optional, minimum 1). If omitted, returns all checks in the date range"
+                }
+            },
+            "urlExamples": {
+                "allChecks": "/report/checks?dateFrom=YYYY-MM-DD&dateTo=YYYY-MM-DD",
+                "paginated": "/report/checks?dateFrom=YYYY-MM-DD&dateTo=YYYY-MM-DD&page=1&limit=50"
+            },
+            "checkFieldsGuidance": {
+                "checkNo": "Unique check number from POS (numeric record ID)",
+                "businessDate": "The accounting / business date in YYYY-MM-DD format",
+                "openedAt": "Local ISO timestamp when the check was opened (YYYY-MM-DDTHH:mm:ss)",
+                "closedAt": "Local ISO timestamp when the check was closed (null if still open)",
+                "orderType": "Order kind: 'DINE_IN', 'TAKEAWAY', or 'DELIVERY'",
+                "deliveryCompany": "Third-party delivery company (e.g. 'Talabat', 'Elmenus', '' if direct delivery, null for non-delivery)",
+                "netSales": "Net sales before service charge and VAT",
+                "service": "Service charge amount",
+                "tax": "Value Added Tax (VAT) amount",
+                "entTax": "Entertainment tax amount (only included if entTax > 0)",
+                "discount": "Total discount amount deducted on the check",
+                "total": "Total paid check amount",
+                "status": "Check status: 'CLOSED', 'OPEN', 'VOID', 'COMP', 'OFFICER', or 'FOOD TEST'",
+                "updatedAt": "Timestamp when check or items were last modified (e.g. after voids); otherwise matches closedAt/openedAt",
+                "items": [
+                    {
+                        "name": "Item name in English (fallback to Arabic)",
+                        "category": "Item category name from POS group",
+                        "qty": "Quantity ordered (number)",
+                        "unitPrice": "Item unit price (number)",
+                        "total": "Line total: qty * unitPrice (number)",
+                        "voided": "Boolean indicating whether this item line was voided (true/false)"
+                    }
+                ]
+            }
+        }
+    },
+    "notes": [
+        "The 'dateFrom' and 'dateTo' parameters in the report endpoints are mandatory and must be in YYYY-MM-DD format.",
+        "All report endpoints can be accessed via '/api/v1/report/*' or directly via '/report/*'.",
+        "All report endpoints require the 'x-api-key' HTTP header for authentication."
+    ]
+}
